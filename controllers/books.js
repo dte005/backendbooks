@@ -13,7 +13,7 @@ exports.getBooks = (req, res)=>{
 	})
 	.catch(error=>{
 		console.log(error);
-		res.json({message: "Erro ao recuperar seu livro"})
+		res.json({error: true, message: "Erro ao recuperar seu livro"})
 	})
 }
 
@@ -27,7 +27,7 @@ exports.createBook = (req, res)=>{
 		books.livros.push(body);
 		return writeFile('./bd/data.json', JSON.stringify(books))})
 	.then(data=>res.json({message: "Seu livro foi registrado"}))
-	.catch(error=>res.json({message: "Erro ao gravar seu livro"}))
+	.catch(error=>res.json({error: true, message: "Erro ao gravar seu livro"}))
 }
 
 exports.getBook = (req, res)=>{
@@ -39,10 +39,10 @@ exports.getBook = (req, res)=>{
 		if(books.livros[parseInt(param.id)]){
 			res.json({book: books.livros[parseInt(param.id)]})
 		}else{
-			res.json({message: "Livro nao encontrado"});
+			res.json({error: true, message: "Livro nao encontrado"});
 		}
 	})
-	.catch(error=>res.json({message: "Erro ao recuperar seu livro"}))
+	.catch(error=>res.json({error: true, message: "Erro ao recuperar seu livro"}))
 }
 
 exports.updateBook = (req, res)=>{
@@ -60,7 +60,7 @@ exports.updateBook = (req, res)=>{
 		}
 	})
 	.then(data=>res.json({message: "Seu livro foi alterado"}))
-	.catch(error=>res.json({message: "Houve um erro ao alterar seu livro"}))
+	.catch(error=>res.json({error: true, message: "Houve um erro ao alterar seu livro"}))
 }
 
 exports.deleteBook = (req, res)=>{
@@ -69,12 +69,17 @@ exports.deleteBook = (req, res)=>{
 	readFile('./bd/data.json')
 	.then(data=>{
 		const books = JSON.parse(data);
-		if(!book.livros[parseInt(param.id)]){
+		if(!books.livros[parseInt(param.id)]){
 			throw new Error("Seu livro nao foi encontrado");
 		}
-		books.livros = books.livros.filter((el, index, array)=>index !== param.id);
+		books.livros = books.livros.filter((el, index, array)=>index !== parseInt(param.id));
 		return writeFile('./bd/data.json', JSON.stringify(books))
 	})
-	.then(data=>res.json({message: "Livro deletado"}))
-	.catch(error=>res.json({message: "Houve um erro ao deletar seu livro"}))
+	.then(data=>{
+		res.json({message: "Livro deletado"})
+	})
+	.catch(error=>{
+		console.log(error);
+		res.json({error: true, message: "Houve um erro ao deletar seu livro"})
+	})
 }
